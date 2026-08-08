@@ -29,7 +29,7 @@ Complete this guide in order. Each section maps to a Phase in the build plan.
 
 1. [render.com](https://render.com) → New → Web Service
 2. Connect GitHub repo `dreameterftw/Aegis`
-3. Root directory: `cybersuraksha/render-apk-service`
+3. Root directory: `Aegis/render-apk-service`
 4. Build command: `pip install -r requirements.txt`
 5. Start command: `gunicorn app:app --bind 0.0.0.0:$PORT`
 6. Copy the service URL → add as `RENDER_APK_SERVICE_URL` Worker secret (Phase 2)
@@ -54,7 +54,7 @@ Complete this guide in order. Each section maps to a Phase in the build plan.
 ## Phase 1 — Local Development
 
 ```bash
-cd cybersuraksha/worker
+cd Aegis/worker
 npm install
 wrangler dev
 ```
