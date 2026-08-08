@@ -1,0 +1,17 @@
+node_modules/
+.wrangler/
+dist/
+.env
+*.env.local
+*.pem
+*.key
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+serviceAccountKey.json
+firebase-adminsdk-*.json
+.DS_Store
+Thumbs.db

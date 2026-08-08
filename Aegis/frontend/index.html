@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a1f3c" />
+  <meta name="description" content="Aegis — India's mobile security guardian. Scan APKs, detect phishing links, check data breaches." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+  <!-- Preconnect to Worker -->
+  <link rel="preconnect" href="https://aegis-router.workers.dev" />
+
+  <title>Aegis</title>
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Tab bar -->
+    <nav class="tab-bar" role="tablist" aria-label="Main navigation">
+      <button class="tab-btn active" data-tab="scanner" role="tab" aria-selected="true" aria-controls="tab-scanner">
+        <span class="tab-icon" aria-hidden="true">🔍</span>
+        <span class="tab-label">Scanner</span>
+      </button>
+      <button class="tab-btn" data-tab="linksentry" role="tab" aria-selected="false" aria-controls="tab-linksentry">
+        <span class="tab-icon" aria-hidden="true">🔗</span>
+        <span class="tab-label">LinkSentry</span>
+      </button>
+      <button class="tab-btn" data-tab="breach" role="tab" aria-selected="false" aria-controls="tab-breach">
+        <span class="tab-icon" aria-hidden="true">🛡️</span>
+        <span class="tab-label">BreachRadar</span>
+      </button>
+    </nav>
+
+    <!-- Tab panels -->
+    <main class="tab-panels">
+
+      <!-- ── Scanner (APK TrustScore) ─────────────────────────────────── -->
+      <section id="tab-scanner" class="tab-panel active" role="tabpanel" aria-labelledby="tab-scanner-btn">
+        <div class="panel-header">
+          <h1 class="panel-title">APK Scanner</h1>
+          <p class="panel-subtitle">Drop an APK to check for OTP stealers &amp; malware</p>
+        </div>
+
+        <div class="upload-zone" id="apkDropZone" tabindex="0" role="button"
+             aria-label="Upload APK file" aria-describedby="upload-hint">
+          <div class="upload-icon" aria-hidden="true">📱</div>
+          <p class="upload-primary">Tap to upload or share APK</p>
+          <p class="upload-secondary" id="upload-hint">Supports .apk files up to 50 MB</p>
+          <input type="file" id="apkFileInput" accept=".apk,application/vnd.android.package-archive"
+                 class="visually-hidden" aria-label="Select APK file" />
+        </div>
+
+        <div id="apkResult" class="result-card hidden" aria-live="polite" aria-atomic="true"></div>
+        <div id="apkLoading" class="loading-state hidden" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Analysing APK…</p>
+        </div>
+      </section>
+
+      <!-- ── LinkSentry ───────────────────────────────────────────────── -->
+      <section id="tab-linksentry" class="tab-panel" role="tabpanel" aria-labelledby="tab-linksentry-btn">
+        <div class="panel-header">
+          <h1 class="panel-title">LinkSentry</h1>
+          <p class="panel-subtitle">Check if a URL is safe before clicking</p>
+        </div>
+
+        <form id="linkForm" class="link-form" novalidate>
+          <div class="input-group">
+            <label for="linkInput" class="visually-hidden">Enter URL to check</label>
+            <input type="url" id="linkInput" class="link-input" placeholder="Paste link here…"
+                   autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+                   aria-label="URL to check" required />
+            <button type="submit" class="btn btn-primary">Check</button>
+          </div>
+        </form>
+
+        <div id="linkResult" class="result-card hidden" aria-live="polite" aria-atomic="true"></div>
+        <div id="linkLoading" class="loading-state hidden" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Checking link…</p>
+        </div>
+      </section>
+
+      <!-- ── BreachRadar ──────────────────────────────────────────────── -->
+      <section id="tab-breach" class="tab-panel" role="tabpanel" aria-labelledby="tab-breach-btn">
+        <div class="panel-header">
+          <h1 class="panel-title">BreachRadar</h1>
+          <p class="panel-subtitle">Check if your number appeared in a data breach</p>
+        </div>
+
+        <div class="privacy-badge" role="note">
+          <span class="privacy-icon" aria-hidden="true">🔒</span>
+          Your number never leaves this device — only a partial hash is sent.
+        </div>
+
+        <form id="breachForm" class="breach-form" novalidate>
+          <div class="input-group">
+            <label for="phoneInput" class="input-label">Mobile Number</label>
+            <div class="phone-row">
+              <span class="country-code" aria-label="Country code India">+91</span>
+              <input type="tel" id="phoneInput" class="phone-input"
+                     placeholder="98765 43210" maxlength="10"
+                     pattern="[6-9][0-9]{9}"
+                     aria-label="10-digit mobile number"
+                     inputmode="numeric" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Check Breaches</button>
+          </div>
+        </form>
+
+        <div id="breachResult" class="result-card hidden" aria-live="polite" aria-atomic="true"></div>
+        <div id="breachLoading" class="loading-state hidden" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Checking breach index…</p>
+        </div>
+
+        <div class="notify-section hidden" id="notifySection">
+          <button class="btn btn-outline" id="notifyBtn">
+            🔔 Alert me if my number appears in new breaches
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Language selector -->
+  <div class="lang-fab" id="langFab" role="region" aria-label="Language selector">
+    <button class="lang-btn" id="langToggle" aria-label="Change language" aria-expanded="false">
+      <span id="currentLangLabel">EN</span>
+    </button>
+    <div class="lang-menu hidden" id="langMenu" role="menu">
+      <button class="lang-option" data-lang="en" role="menuitem">English</button>
+      <button class="lang-option" data-lang="hi" role="menuitem">हिन्दी</button>
+      <button class="lang-option" data-lang="ta" role="menuitem">தமிழ்</button>
+      <button class="lang-option" data-lang="te" role="menuitem">తెలుగు</button>
+      <button class="lang-option" data-lang="bn" role="menuitem">বাংলা</button>
+      <button class="lang-option" data-lang="mr" role="menuitem">मराठी</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

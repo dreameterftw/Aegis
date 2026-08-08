@@ -1,0 +1,16 @@
+{
+  "name": "aegis",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "worker",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:worker": "cd worker && wrangler dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "deploy:worker": "cd worker && wrangler deploy",
+    "deploy:frontend": "cd frontend && npm run build"
+  },
+  "description": "Aegis - India-focused mobile security platform"
+}

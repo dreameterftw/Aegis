@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Public read-only reference data
+    match /apk_cache/{hash} {
+      allow read: if true;
+      allow write: if false;  // Worker (Admin SDK) only
+    }
+    match /domain_blocklist/{domain} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /breach_index/{breachId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Anonymous users can submit signals, never overwrite others'
+    match /threat_signals/{signalId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if false;  // only Worker can increment/propagate
+    }
+
+    // Users can only read/write their own breach-lookup hash and FCM token
+    match /user_breach_lookups/{hashPrefix} {
+      allow read: if true;   // k-anonymity prefix is not identifying
+      allow write: if false;
+    }
+    match /fcm_subscriptions/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /_health/{doc} {
+      allow read, write: if false;  // Worker only
+    }
+  }
+}
