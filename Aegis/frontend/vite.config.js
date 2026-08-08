@@ -51,7 +51,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           onnx: ["onnxruntime-web"],
-          firebase: ["firebase/app", "firebase/auth", "firebase/firestore", "firebase/messaging"]
+          firebase: ["firebase/app", "firebase/auth", "firebase/messaging"]
         }
       }
     }
