@@ -21,9 +21,17 @@ Complete this guide in order. Each section maps to a Phase in the build plan.
 
 1. [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages → Create application
 2. Workers → Create Worker → name: `aegis-router`
-3. Install Wrangler: `npm install -g wrangler@3`
-4. `wrangler login`
-5. Push secrets: `bash scripts/put-secrets.sh`
+3. Install project dependencies: `npm install`
+   - If npm reports `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, run it as:
+     - PowerShell: `$env:NODE_OPTIONS="--use-system-ca"; npm install`
+     - Bash: `NODE_OPTIONS=--use-system-ca npm install`
+4. Create a Cloudflare API token with Workers edit permissions
+5. Set it in your shell before running Worker commands:
+   - PowerShell: `$env:CLOUDFLARE_API_TOKEN="your-token"`
+   - Bash: `export CLOUDFLARE_API_TOKEN="your-token"`
+6. Push secrets: `bash scripts/put-secrets.sh`
+
+Worker commands run through `scripts/run-wrangler.mjs`, which sets `NODE_OPTIONS=--use-system-ca` and fails fast when `CLOUDFLARE_API_TOKEN` is missing. This avoids Wrangler falling back to OAuth on certificate-intercepting networks.
 
 ### 3. Render (free Python web service)
 
@@ -56,7 +64,7 @@ Complete this guide in order. Each section maps to a Phase in the build plan.
 ```bash
 cd Aegis/worker
 npm install
-wrangler dev
+npm run dev
 ```
 
 Milestone tests:

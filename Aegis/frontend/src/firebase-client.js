@@ -14,6 +14,22 @@ import { FIREBASE_CONFIG, VAPID_KEY, WORKER_URL } from "./config.js";
 const app = initializeApp(FIREBASE_CONFIG);
 export const auth = getAuth(app);
 
+// Register the FCM service worker with config params in the URL
+// so the SW can initialise Firebase without hardcoded values.
+if ('serviceWorker' in navigator) {
+  const swParams = new URLSearchParams({
+    apiKey: FIREBASE_CONFIG.apiKey,
+    authDomain: FIREBASE_CONFIG.authDomain,
+    projectId: FIREBASE_CONFIG.projectId,
+    storageBucket: FIREBASE_CONFIG.storageBucket,
+    messagingSenderId: FIREBASE_CONFIG.messagingSenderId,
+    appId: FIREBASE_CONFIG.appId,
+  });
+  navigator.serviceWorker.register(
+    `/firebase-messaging-sw.js?${swParams.toString()}`
+  ).catch((err) => console.warn('FCM SW registration failed:', err));
+}
+
 let _uid = null;
 
 /**

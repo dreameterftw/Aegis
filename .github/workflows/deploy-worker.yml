@@ -39,3 +39,4 @@ jobs:
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" | npx wrangler secret put FIREBASE_SERVICE_ACCOUNT_JSON
           echo "${{ secrets.GROQ_API_KEY }}" | npx wrangler secret put GROQ_API_KEY
           echo "${{ secrets.VIRUSTOTAL_API_KEY }}" | npx wrangler secret put VIRUSTOTAL_API_KEY
+          echo "${{ secrets.RENDER_APK_SERVICE_URL }}" | npx wrangler secret put RENDER_APK_SERVICE_URL
