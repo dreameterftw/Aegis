@@ -12,9 +12,10 @@
  */
 
 import { ensureAnonymousAuth, subscribeToBreachAlerts } from "./firebase-client.js";
-import { classifyURL } from "./onnx.js";
+import { classifyURL } from "./lib/linkClassifier.js";
 import { getPhoneHashPrefix } from "./crypto.js";
 import { renderAPKCard, renderLinkCard, renderBreachCard } from "./ui/cards.js";
+import { generateWarningCard, shareWarningCard } from "./lib/warningCard.js";
 import { WORKER_URL } from "./config.js";
 
 // ── Language ──────────────────────────────────────────────────────────────────
@@ -129,13 +130,15 @@ linkForm.addEventListener("submit", async (e) => {
   setLoading(linkLoading, linkResult, true);
 
   try {
-    // Run ONNX on-device first (fast, free)
+    // Run on-device classifier first (fast, zero network cost)
     let onnxScore = null;
+    let clientClassification = null;
     try {
-      const onnx = await classifyURL(url);
-      onnxScore = onnx.score;
+      const clf = await classifyURL(url);
+      onnxScore = clf.score;
+      clientClassification = { isPhishing: clf.isPhishing, score: clf.score, source: clf.source };
     } catch (err) {
-      console.warn("ONNX classify failed (model may not be loaded):", err.message);
+      console.warn("Link classifier failed:", err.message);
     }
 
     const uid = await ensureAnonymousAuth();
@@ -153,6 +156,21 @@ linkForm.addEventListener("submit", async (e) => {
 
     if (data.dangerous) {
       setupCommunityReport(linkResult, data.hostname, "domain", uid);
+
+      // Wire up share card button if rendered
+      const shareBtn = linkResult.querySelector(".share-card-btn");
+      if (shareBtn) {
+        shareBtn.addEventListener("click", () => {
+          const verdictText = t(data.verdicts) || "This link is dangerous.";
+          const cardUrl = generateWarningCard({
+            verdictText,
+            hostname: data.hostname,
+            severity: "danger",
+            language: currentLang,
+          });
+          shareWarningCard(cardUrl, verdictText);
+        });
+      }
     }
   } catch (err) {
     showError(linkResult, err.message);

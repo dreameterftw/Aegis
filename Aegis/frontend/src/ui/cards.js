@@ -123,6 +123,9 @@ export function renderLinkCard(data, t) {
     <button class="btn btn-danger report-btn" aria-label="Report this domain to community blocklist">
       Report to blocklist
     </button>
+    <button class="btn btn-share share-card-btn" aria-label="Share warning card">
+      Share Warning
+    </button>
   </div>` : ""}
 </div>`;
 }

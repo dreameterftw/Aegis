@@ -4,14 +4,14 @@ compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
 
 [triggers]
-crons = ["0 3 * * *"]  # daily 8:30 AM IST for blocklist ingestion
+crons = ["0 3 * * *"]  # daily 8:30 AM IST — blocklist ingestion
 
 [vars]
 ENVIRONMENT = "production"
 
-# ── Secrets (set via `wrangler secret put <NAME>`) ───────────────────────────
+# ── Secrets (set via `wrangler secret put <NAME>` or GitHub Actions) ─────────
 # FIREBASE_SERVICE_ACCOUNT_JSON
 # GROQ_API_KEY
 # VIRUSTOTAL_API_KEY
-# RENDER_APK_SERVICE_URL   (added in Phase 2)
-# Note: no PhishTank key needed — ingestion uses OpenPhish + URLhaus (keyless)
+# RENDER_APK_SERVICE_URL
+# (no PhishTank key — using OpenPhish + URLhaus, both keyless)
