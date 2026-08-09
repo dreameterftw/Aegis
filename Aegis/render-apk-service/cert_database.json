@@ -1,0 +1,21 @@
+{
+  "_comment": "SHA-256 fingerprints of signing certificates for legitimate Indian apps. Populate from: apksigner verify --print-certs <apk> | grep SHA-256. These are placeholders — replace with real values before demo day.",
+  "com.sbi.lotusintouch": "REPLACE_WITH_REAL_SBI_CERT_SHA256",
+  "com.sbi.yono": "REPLACE_WITH_REAL_SBI_YONO_CERT_SHA256",
+  "in.gov.uidai.mAadhaar": "REPLACE_WITH_REAL_UIDAI_CERT_SHA256",
+  "com.phonepe.app": "REPLACE_WITH_REAL_PHONEPE_CERT_SHA256",
+  "com.paytm.android": "REPLACE_WITH_REAL_PAYTM_CERT_SHA256",
+  "net.one97.paytm": "REPLACE_WITH_REAL_PAYTM_ONE97_CERT_SHA256",
+  "cris.org.in.prs.ima": "REPLACE_WITH_REAL_IRCTC_CERT_SHA256",
+  "com.google.android.apps.nbu.paisa.user": "REPLACE_WITH_REAL_GPAY_CERT_SHA256",
+  "com.amazon.mShop.android.shopping": "REPLACE_WITH_REAL_AMAZON_CERT_SHA256",
+  "com.flipkart.android": "REPLACE_WITH_REAL_FLIPKART_CERT_SHA256",
+  "com.hdfcbank.hdfcmobilebanking": "REPLACE_WITH_REAL_HDFC_CERT_SHA256",
+  "com.icici.iMobilePay": "REPLACE_WITH_REAL_ICICI_CERT_SHA256",
+  "com.axis.mobile": "REPLACE_WITH_REAL_AXIS_CERT_SHA256",
+  "com.kotak.mahindra.kotak811": "REPLACE_WITH_REAL_KOTAK_CERT_SHA256",
+  "com.boi.mobile": "REPLACE_WITH_REAL_BOI_CERT_SHA256",
+  "com.snapchat.android": "REPLACE_WITH_REAL_SNAPCHAT_CERT_SHA256",
+  "com.whatsapp": "REPLACE_WITH_REAL_WHATSAPP_CERT_SHA256",
+  "com.truecaller": "REPLACE_WITH_REAL_TRUECALLER_CERT_SHA256"
+}

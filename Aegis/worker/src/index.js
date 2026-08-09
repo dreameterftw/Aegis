@@ -43,9 +43,7 @@ export default {
       }
     } catch {
       return corsResponse(JSON.stringify({ error: 'Invalid request body' }), 400);
-    }
-
-    let result;
+    }    let result;
 
     try {
       switch (path) {

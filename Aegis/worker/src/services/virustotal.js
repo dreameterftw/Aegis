@@ -8,33 +8,34 @@
 const VT_BASE = "https://www.virustotal.com/api/v3";
 
 /**
- * Look up a file hash (SHA-256 / SHA-1 / MD5) on VirusTotal.
- * @param {string} hash
- * @param {string} apiKey
- * @returns {Promise<{positives: number, total: number, permalink: string}|null>}
+ * Look up a file hash (SHA-256) on VirusTotal.
+ * Signature matches what apkHandler expects: checkVirusTotal(sha256, env)
+ * @param {string} sha256
+ * @param {object} env  — Cloudflare Worker env bindings
+ * @returns {Promise<{known: boolean, malicious: number, suspicious: number, permalink: string|null}>}
  */
-export async function checkVirusTotal(hash, apiKey) {
+export async function checkVirusTotal(sha256, env) {
   try {
-    const res = await fetch(`${VT_BASE}/files/${hash}`, {
-      headers: { "x-apikey": apiKey },
+    const res = await fetch(`${VT_BASE}/files/${sha256}`, {
+      headers: { "x-apikey": env.VIRUSTOTAL_API_KEY },
     });
 
-    if (res.status === 404) return { positives: 0, total: 0, permalink: null };
+    if (res.status === 404) return { known: false, malicious: 0, suspicious: 0, permalink: null };
     if (!res.ok) {
       console.error(`VT file lookup error ${res.status}`);
-      return null;
+      return { known: false, error: true, malicious: 0, suspicious: 0, permalink: null };
     }
 
     const data = await res.json();
     const stats = data?.data?.attributes?.last_analysis_stats ?? {};
-    const positives = (stats.malicious ?? 0) + (stats.suspicious ?? 0);
-    const total = Object.values(stats).reduce((a, b) => a + b, 0);
+    const malicious = stats.malicious ?? 0;
+    const suspicious = stats.suspicious ?? 0;
     const permalink = data?.data?.links?.self ?? null;
 
-    return { positives, total, permalink };
+    return { known: true, malicious, suspicious, permalink };
   } catch (err) {
     console.error("VT file lookup exception:", err);
-    return null;
+    return { known: false, error: true, malicious: 0, suspicious: 0, permalink: null };
   }
 }
 

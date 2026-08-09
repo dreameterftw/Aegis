@@ -1,0 +1,102 @@
+{
+  "otp_stealer": {
+    "required": [
+      "android.permission.READ_SMS",
+      "android.permission.RECEIVE_SMS"
+    ],
+    "aggravating": [
+      "android.permission.BIND_ACCESSIBILITY_SERVICE",
+      "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+      "android.permission.FOREGROUND_SERVICE"
+    ],
+    "severity": "critical",
+    "description": "Reads and forwards OTPs — matches KYCShadow and related 2025-2026 Indian banking trojan families"
+  },
+  "full_rat": {
+    "required": [
+      "android.permission.BIND_ACCESSIBILITY_SERVICE",
+      "android.permission.SYSTEM_ALERT_WINDOW",
+      "android.permission.RECORD_AUDIO"
+    ],
+    "aggravating": [
+      "android.permission.CAMERA",
+      "android.permission.READ_CONTACTS",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ],
+    "severity": "critical",
+    "description": "Full remote-access-trojan capability — screen overlay, audio capture, potential remote control"
+  },
+  "silent_installer": {
+    "required": [
+      "android.permission.REQUEST_INSTALL_PACKAGES",
+      "android.permission.BIND_ACCESSIBILITY_SERVICE"
+    ],
+    "aggravating": [
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+      "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+    ],
+    "severity": "high",
+    "description": "Can silently install further malicious payloads without user interaction"
+  },
+  "screen_scraper": {
+    "required": [
+      "android.permission.BIND_ACCESSIBILITY_SERVICE",
+      "android.permission.SYSTEM_ALERT_WINDOW"
+    ],
+    "aggravating": [
+      "android.permission.READ_SMS",
+      "android.permission.WRITE_SETTINGS"
+    ],
+    "severity": "high",
+    "description": "Screen overlay attack — can intercept banking app credentials and PINs"
+  },
+  "contact_harvester": {
+    "required": [
+      "android.permission.READ_CONTACTS",
+      "android.permission.READ_CALL_LOG",
+      "android.permission.INTERNET"
+    ],
+    "aggravating": [
+      "android.permission.READ_SMS",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ],
+    "severity": "high",
+    "description": "Harvests contact list and call logs — common in loan-app scams targeting Indian users"
+  },
+  "location_tracker": {
+    "required": [
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.ACCESS_BACKGROUND_LOCATION"
+    ],
+    "aggravating": [
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+    ],
+    "severity": "medium",
+    "description": "Persistent background location tracking — used in stalkerware and predatory loan apps"
+  },
+  "camera_mic_spy": {
+    "required": [
+      "android.permission.CAMERA",
+      "android.permission.RECORD_AUDIO"
+    ],
+    "aggravating": [
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.BIND_ACCESSIBILITY_SERVICE"
+    ],
+    "severity": "high",
+    "description": "Can activate camera and microphone silently — spyware indicator"
+  },
+  "persistence_mechanism": {
+    "required": [
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+      "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+    ],
+    "aggravating": [
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.BIND_JOB_SERVICE"
+    ],
+    "severity": "medium",
+    "description": "Auto-starts on device boot and prevents battery optimization — persistence mechanism common in malware"
+  }
+}

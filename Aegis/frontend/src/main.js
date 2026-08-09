@@ -80,8 +80,17 @@ async function analyzeAPK(file) {
 
   try {
     const uid = await ensureAnonymousAuth();
+
+    // Compute SHA-256 on device before upload
+    const arrayBuffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+    const sha256 = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("sha256", sha256);
     formData.append("uid", uid);
 
     const res = await fetch(`${WORKER_URL}/analyze`, {
@@ -97,7 +106,7 @@ async function analyzeAPK(file) {
 
     // Offer community report for dangerous APKs
     if (data.trustScore < 30) {
-      setupCommunityReport(apkResult, data.hash, "apk", uid);
+      setupCommunityReport(apkResult, data.apk_sha256 || sha256, "apk", uid);
     }
   } catch (err) {
     showError(apkResult, err.message);
