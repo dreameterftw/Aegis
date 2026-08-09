@@ -88,27 +88,71 @@
       <section id="tab-breach" class="tab-panel" role="tabpanel" aria-labelledby="tab-breach-btn">
         <div class="panel-header">
           <h1 class="panel-title">BreachRadar</h1>
-          <p class="panel-subtitle">Check if your number appeared in a data breach</p>
+          <p class="panel-subtitle">Check if your data was exposed in Indian breaches</p>
         </div>
 
         <div class="privacy-badge" role="note">
           <span class="privacy-icon" aria-hidden="true">🔒</span>
-          Your number never leaves this device — only a partial hash is sent.
+          Select the services you use — we check India's known breach index.
         </div>
 
         <form id="breachForm" class="breach-form" novalidate>
-          <div class="input-group">
-            <label for="phoneInput" class="input-label">Mobile Number</label>
-            <div class="phone-row">
-              <span class="country-code" aria-label="Country code India">+91</span>
-              <input type="tel" id="phoneInput" class="phone-input"
-                     placeholder="98765 43210" maxlength="10"
-                     pattern="[6-9][0-9]{9}"
-                     aria-label="10-digit mobile number"
-                     inputmode="numeric" required />
+          <fieldset class="service-fieldset">
+            <legend class="service-legend">Which services have you used?</legend>
+            <div class="service-grid">
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="star_health" />
+                <span>🏥 Star Health</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="cowin" />
+                <span>💉 CoWIN</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="aadhaar" />
+                <span>🪪 Aadhaar-linked</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="mobikwik" />
+                <span>💳 MobiKwik</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="bigbasket" />
+                <span>🛒 BigBasket</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="justdial" />
+                <span>📞 JustDial</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="dominos" />
+                <span>🍕 Domino's India</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="airtel" />
+                <span>📶 Airtel</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="facebook" />
+                <span>👤 Facebook</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="truecaller" />
+                <span>📱 Truecaller</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="railway_irctc" />
+                <span>🚆 IRCTC</span>
+              </label>
+              <label class="service-chip">
+                <input type="checkbox" name="service" value="epfo" />
+                <span>🏦 EPFO / PF</span>
+              </label>
             </div>
-            <button type="submit" class="btn btn-primary">Check Breaches</button>
-          </div>
+          </fieldset>
+          <button type="submit" class="btn btn-primary btn-full" id="breachSubmitBtn" disabled>
+            Check My Exposure
+          </button>
         </form>
 
         <div id="breachResult" class="result-card hidden" aria-live="polite" aria-atomic="true"></div>
@@ -119,7 +163,7 @@
 
         <div class="notify-section hidden" id="notifySection">
           <button class="btn btn-outline" id="notifyBtn">
-            🔔 Alert me if my number appears in new breaches
+            🔔 Alert me when new Indian breaches are added
           </button>
         </div>
       </section>

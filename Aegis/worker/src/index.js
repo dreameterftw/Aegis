@@ -59,8 +59,6 @@ export default {
         }
 
         case '/breach-lookup': {
-          const cached = await checkCache(db, 'breach_cache', body.hashPrefix);
-          if (cached) return corsResponse(JSON.stringify(cached));
           result = await handleBreach(body, db, env);
           break;
         }

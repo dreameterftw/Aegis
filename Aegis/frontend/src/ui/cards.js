@@ -138,7 +138,7 @@ export function renderLinkCard(data, t) {
  * @returns {string} HTML
  */
 export function renderBreachCard(data, t) {
-  const { found, breachCount, breaches, actionPlan } = data;
+  const { found, safetyScore, breachCount, breaches, actionPlans } = data;
 
   if (!found) {
     return `
@@ -148,28 +148,43 @@ export function renderBreachCard(data, t) {
     <div class="verdict-meta">
       <span class="status-badge status-safe">CLEAN</span>
     </div>
+    <div class="trust-score-ring" aria-label="Safety score 100 out of 100">
+      <svg viewBox="0 0 36 36" class="ring-svg" aria-hidden="true">
+        <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
+        <circle class="ring-fill status-safe-ring" cx="18" cy="18" r="15.9"
+          stroke-dasharray="100 0" stroke-dashoffset="25"/>
+      </svg>
+      <span class="ring-label">100</span>
+    </div>
   </div>
-  <p class="verdict-text">No breaches found for this number in our India breach index.</p>
+  <p class="verdict-text">None of the selected services appear in our India breach index. Stay vigilant.</p>
 </div>`;
   }
 
-  const breachItems = (breaches || [])
-    .map(
-      (b) => `
-<li class="breach-item">
-  <strong class="breach-name">${escapeHTML(b.name || "Unknown")}</strong>
-  <span class="breach-date">${escapeHTML(b.date || "")}</span>
-  <span class="breach-types">${(b.dataTypes || []).map(escapeHTML).join(", ")}</span>
-</li>`
-    )
-    .join("");
+  const score = safetyScore ?? 0;
+  const scoreClass = score >= 70 ? 'status-safe' : score >= 40 ? 'status-warn' : 'status-danger';
 
-  // actionPlan is Record<lang, string[]>
-  const currentLang = localStorage.getItem("aegis_lang") || "en";
-  const steps = actionPlan?.[currentLang] || actionPlan?.en || [];
-  const stepItems = steps
-    .map((s, i) => `<li class="action-step"><span class="step-num">${i + 1}</span>${escapeHTML(s)}</li>`)
-    .join("");
+  const breachItems = (breaches || []).map((b) => `
+<li class="breach-item">
+  <div class="breach-item-header">
+    <strong class="breach-name">${escapeHTML(b.name || 'Unknown')}</strong>
+    <span class="breach-severity severity-${b.severity || 'medium'}">${(b.severity || 'medium').toUpperCase()}</span>
+  </div>
+  <span class="breach-date">📅 ${escapeHTML(b.date || '')}</span>
+  <span class="breach-types">🔓 ${(b.dataTypes || []).map(escapeHTML).join(', ')}</span>
+  ${b.affectedRange ? `<span class="breach-scale">👥 ${escapeHTML(b.affectedRange)}</span>` : ''}
+</li>`).join('');
+
+  const planItems = (actionPlans || []).map((plan) => {
+    const steps = (plan.steps || []).map((s, i) =>
+      `<li class="action-step"><span class="step-num">${i + 1}</span>${escapeHTML(s)}</li>`
+    ).join('');
+    return `
+<div class="action-plan-block">
+  <h4 class="action-plan-breach-name">${escapeHTML(plan.breachName || '')}</h4>
+  <ol class="action-steps" role="list">${steps}</ol>
+</div>`;
+  }).join('');
 
   return `
 <div class="verdict-card status-danger" role="region" aria-label="Breach check result">
@@ -177,20 +192,30 @@ export function renderBreachCard(data, t) {
     <span class="verdict-icon" aria-hidden="true">🚨</span>
     <div class="verdict-meta">
       <span class="status-badge status-danger">BREACHED</span>
-      <span class="breach-count">${breachCount} breach${breachCount > 1 ? "es" : ""} found</span>
+      <span class="breach-count">${breachCount} breach${breachCount > 1 ? 'es' : ''} found</span>
+    </div>
+    <div class="trust-score-ring" aria-label="Digital safety score ${score} out of 100">
+      <svg viewBox="0 0 36 36" class="ring-svg" aria-hidden="true">
+        <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
+        <circle class="ring-fill ${scoreClass}-ring" cx="18" cy="18" r="15.9"
+          stroke-dasharray="${score} ${100 - score}" stroke-dashoffset="25"/>
+      </svg>
+      <span class="ring-label">${score}</span>
     </div>
   </div>
+
+  <p class="score-label">Digital Safety Score: <strong>${score}/100</strong></p>
 
   <details class="breaches-section" open>
     <summary class="breaches-title">Affected breaches</summary>
     <ul class="breaches-list" role="list">${breachItems}</ul>
   </details>
 
-  ${stepItems ? `
-  <div class="action-plan" role="region" aria-label="Recommended actions">
+  ${planItems ? `
+  <div class="action-plans" role="region" aria-label="Recommended actions">
     <h3 class="action-plan-title">What to do now</h3>
-    <ol class="action-steps" role="list">${stepItems}</ol>
-  </div>` : ""}
+    ${planItems}
+  </div>` : ''}
 </div>`;
 }
 

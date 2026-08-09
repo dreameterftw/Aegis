@@ -193,31 +193,33 @@ if (location.pathname === "/share") {
 
 // ── BreachRadar ───────────────────────────────────────────────────────────────
 const breachForm = document.getElementById("breachForm");
-const phoneInput = document.getElementById("phoneInput");
 const breachResult = document.getElementById("breachResult");
 const breachLoading = document.getElementById("breachLoading");
 const notifySection = document.getElementById("notifySection");
 const notifyBtn = document.getElementById("notifyBtn");
+const breachSubmitBtn = document.getElementById("breachSubmitBtn");
+
+// Enable submit only when at least one service is checked
+breachForm.addEventListener("change", () => {
+  const checked = breachForm.querySelectorAll("input[name='service']:checked");
+  breachSubmitBtn.disabled = checked.length === 0;
+});
 
 breachForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const phone = phoneInput.value.replace(/\D/g, "");
 
-  if (!phone || phone.length !== 10) {
-    showError(breachResult, "Please enter a valid 10-digit mobile number.");
-    return;
-  }
+  const checked = [...breachForm.querySelectorAll("input[name='service']:checked")];
+  const servicesUsed = checked.map((el) => el.value);
+
+  if (servicesUsed.length === 0) return;
 
   setLoading(breachLoading, breachResult, true);
 
   try {
-    // Hash on device — raw number never transmitted
-    const hashPrefix = await getPhoneHashPrefix(`+91${phone}`);
-
     const res = await fetch(`${WORKER_URL}/breach-lookup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ hashPrefix }),
+      body: JSON.stringify({ servicesUsed }),
     });
 
     if (!res.ok) throw new Error(`Server error ${res.status}`);
