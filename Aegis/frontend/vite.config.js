@@ -1,8 +1,35 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { rmSync, readdirSync } from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Deletes wasm files from dist after build —
+// they are loaded from CDN at runtime via ort.env.wasm.wasmPaths
+function removeWasmPlugin() {
+  return {
+    name: "remove-wasm",
+    closeBundle() {
+      const assetsDir = resolve(__dirname, "dist/assets");
+      try {
+        readdirSync(assetsDir)
+          .filter((f) => f.endsWith(".wasm"))
+          .forEach((f) => {
+            rmSync(resolve(assetsDir, f));
+            console.log(`[remove-wasm] deleted dist/assets/${f}`);
+          });
+      } catch {
+        // dist/assets may not exist in non-build modes
+      }
+    },
+  };
+}
 
 export default defineConfig({
   plugins: [
+    removeWasmPlugin(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icons/*.png", "models/*.onnx"],
@@ -48,9 +75,6 @@ export default defineConfig({
   build: {
     target: "es2020",
     rollupOptions: {
-      // Exclude onnxruntime-web wasm binaries from the bundle —
-      // they are loaded from CDN at runtime via ort.env.wasm.wasmPaths
-      external: [/\.wasm$/],
       output: {
         manualChunks: {
           onnx: ["onnxruntime-web"],
