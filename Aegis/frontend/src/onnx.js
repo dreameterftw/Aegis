@@ -12,6 +12,10 @@ import * as ort from "onnxruntime-web";
 import { vectorizeURL } from "./utils/url-features.js";
 import { ONNX_MODEL_PATH, ONNX_FEATURE_DIM } from "./config.js";
 
+// Load wasm binaries from CDN — keeps them out of the build output
+// and under Cloudflare Pages' 25 MiB per-file limit.
+ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";
+
 let _session = null;
 
 /**

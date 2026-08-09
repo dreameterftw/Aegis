@@ -34,7 +34,7 @@ export default defineConfig({
         }
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,onnx}"],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com/,
@@ -48,6 +48,9 @@ export default defineConfig({
   build: {
     target: "es2020",
     rollupOptions: {
+      // Exclude onnxruntime-web wasm binaries from the bundle —
+      // they are loaded from CDN at runtime via ort.env.wasm.wasmPaths
+      external: [/\.wasm$/],
       output: {
         manualChunks: {
           onnx: ["onnxruntime-web"],
