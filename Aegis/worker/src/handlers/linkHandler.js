@@ -13,7 +13,7 @@ import { checkVirusTotalURL } from '../services/virustotal.js';
 // ── Request handler ───────────────────────────────────────────────────────────
 
 export async function handleLink(body, db, env) {
-  const { url, onnxScore, uid } = body;
+  const { url, onnxScore, uid, pincode, verifiedUid } = body;
 
   if (!url) {
     return Response.json({ error: 'Missing url' }, { status: 400 });
@@ -60,15 +60,6 @@ export async function handleLink(body, db, env) {
   }
 
   // ── Record signal (non-fatal) ─────────────────────────────────────────────
-  if (clientFlagged) {
-    try {
-      await incrementReportCount(db, hostname, 'link');
-    } catch (err) {
-      console.warn('Signal record failed:', err.message);
-    }
-  }
-
-  // ── Cache dangerous results so repeat lookups are instant ─────────────────
   const result = {
     hostname,
     url,
@@ -77,7 +68,21 @@ export async function handleLink(body, db, env) {
     vtDetections: vtResult ? vtPositives : null,
     verdicts,
     source: 'fresh',
+    communityReportCount: null,
+    communityPropagated: false,
   };
+
+  if (clientFlagged && verifiedUid) {
+    try {
+      const propagation = await incrementReportCount(db, hostname, 'link', verifiedUid, pincode || null);
+      result.communityReportCount = propagation.count;
+      result.communityPropagated = propagation.justPropagated;
+    } catch (err) {
+      console.warn('Signal record failed:', err.message);
+    }
+  }
+
+  // ── Cache dangerous results so repeat lookups are instant ─────────────────
 
   if (dangerous) {
     try {

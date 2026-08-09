@@ -11,11 +11,13 @@
  *  - Language selector (Phase 6)
  */
 
-import { ensureAnonymousAuth, subscribeToBreachAlerts } from "./firebase-client.js";
+import { ensureAnonymousAuth, getIdToken, getFirebaseApp } from "./firebase-client.js";
 import { classifyURL } from "./lib/linkClassifier.js";
 import { getPhoneHashPrefix } from "./crypto.js";
 import { renderAPKCard, renderLinkCard, renderBreachCard } from "./ui/cards.js";
 import { generateWarningCard, shareWarningCard } from "./lib/warningCard.js";
+import { enableBreachAlerts } from "./lib/notifications.js";
+import { s } from "./lib/verdictTemplates.js";
 import { WORKER_URL } from "./config.js";
 
 // ── Language ──────────────────────────────────────────────────────────────────
@@ -23,6 +25,20 @@ let currentLang = localStorage.getItem("aegis_lang") || "en";
 
 function t(verdicts) {
   return verdicts?.[currentLang] || verdicts?.en || "";
+}
+
+// ── Pincode (community heatmap) ───────────────────────────────────────────────
+// Asked once, stored locally — never tied to identity
+let userPincode = localStorage.getItem("aegis_pincode") || null;
+
+function getPincode() {
+  if (userPincode) return userPincode;
+  const pin = prompt("Enter your 6-digit pincode to contribute to the scam heatmap (optional — press Cancel to skip):");
+  if (pin && /^\d{6}$/.test(pin.trim())) {
+    userPincode = pin.trim();
+    localStorage.setItem("aegis_pincode", userPincode);
+  }
+  return userPincode;
 }
 
 // ── Tab navigation ────────────────────────────────────────────────────────────
@@ -81,6 +97,7 @@ async function analyzeAPK(file) {
 
   try {
     const uid = await ensureAnonymousAuth();
+    const idToken = await getIdToken().catch(() => null);
 
     // Compute SHA-256 on device before upload
     const arrayBuffer = await file.arrayBuffer();
@@ -93,9 +110,14 @@ async function analyzeAPK(file) {
     formData.append("file", file);
     formData.append("sha256", sha256);
     formData.append("uid", uid);
+    if (userPincode) formData.append("pincode", userPincode);
+
+    const headers = {};
+    if (idToken) headers["Authorization"] = `Bearer ${idToken}`;
 
     const res = await fetch(`${WORKER_URL}/analyze`, {
       method: "POST",
+      headers,
       body: formData,
     });
 
@@ -105,7 +127,6 @@ async function analyzeAPK(file) {
     apkResult.innerHTML = renderAPKCard(data, t);
     apkResult.classList.remove("hidden");
 
-    // Offer community report for dangerous APKs
     if (data.trustScore < 30) {
       setupCommunityReport(apkResult, data.apk_sha256 || sha256, "apk", uid);
     }
@@ -142,10 +163,14 @@ linkForm.addEventListener("submit", async (e) => {
     }
 
     const uid = await ensureAnonymousAuth();
+    const idToken = await getIdToken().catch(() => null);
     const res = await fetch(`${WORKER_URL}/check-link`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, onnxScore, uid }),
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+      },
+      body: JSON.stringify({ url, onnxScore, uid, pincode: userPincode }),
     });
 
     if (!res.ok) throw new Error(`Server error ${res.status}`);
@@ -241,9 +266,9 @@ breachForm.addEventListener("submit", async (e) => {
 notifyBtn.addEventListener("click", async () => {
   notifyBtn.disabled = true;
   notifyBtn.textContent = "Subscribing…";
-  const ok = await subscribeToBreachAlerts();
-  notifyBtn.textContent = ok ? "✅ Subscribed!" : "❌ Permission denied";
-  notifyBtn.disabled = false;
+  const result = await enableBreachAlerts(getFirebaseApp());
+  notifyBtn.textContent = result.enabled ? "✅ Subscribed!" : `❌ ${result.reason || 'Failed'}`;
+  notifyBtn.disabled = !result.enabled;
 });
 
 // ── Community signal report ────────────────────────────────────────────────────
@@ -256,13 +281,25 @@ function setupCommunityReport(container, hashOrDomain, type, uid) {
     reportBtn.textContent = "Reporting…";
 
     try {
+      const idToken = await getIdToken().catch(() => null);
+      if (!idToken) {
+        reportBtn.textContent = "Sign-in required";
+        return;
+      }
       const res = await fetch(`${WORKER_URL}/report-signal`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hashOrDomain, type, anonUid: uid }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ hashOrDomain, type, pincode: userPincode }),
       });
       const data = await res.json();
-      reportBtn.textContent = data.propagated ? "⚠️ Added to blocklist" : "✅ Reported";
+      if (data.duplicate) {
+        reportBtn.textContent = "Already reported";
+      } else {
+        reportBtn.textContent = data.propagated ? s("community_propagated", currentLang) : s("community_reported", currentLang);
+      }
     } catch {
       reportBtn.textContent = "Report failed";
       reportBtn.disabled = false;

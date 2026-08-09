@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "threat_signals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "propagated", "order": "ASCENDING" },
+        { "fieldPath": "reportCount", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

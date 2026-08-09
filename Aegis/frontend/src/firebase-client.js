@@ -12,6 +12,7 @@ import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import { FIREBASE_CONFIG, VAPID_KEY, WORKER_URL } from "./config.js";
 
 const app = initializeApp(FIREBASE_CONFIG);
+_app = app;
 export const auth = getAuth(app);
 
 // Register the FCM service worker with config params in the URL
@@ -31,6 +32,9 @@ if ('serviceWorker' in navigator) {
 }
 
 let _uid = null;
+let _app = null;
+
+export function getFirebaseApp() { return _app; }
 
 /**
  * Sign in anonymously and cache the UID.
@@ -56,6 +60,17 @@ export async function ensureAnonymousAuth() {
       }
     });
   });
+}
+
+/**
+ * Get the current user's Firebase ID token for authenticating Worker requests.
+ * @returns {Promise<string>}
+ */
+export async function getIdToken() {
+  await ensureAnonymousAuth();
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not authenticated');
+  return user.getIdToken();
 }
 
 /**

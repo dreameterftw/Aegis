@@ -23,6 +23,12 @@ service cloud.firestore {
       allow update, delete: if false;  // only Worker can increment/propagate
     }
 
+    // Flat reporter dedup index — one doc per (signal, uid) pair
+    match /threat_signal_reporters/{reporterKey} {
+      allow read: if false;   // Worker only
+      allow write: if false;
+    }
+
     // Users can only read/write their own breach-lookup hash and FCM token
     match /user_breach_lookups/{hashPrefix} {
       allow read: if true;   // k-anonymity prefix is not identifying

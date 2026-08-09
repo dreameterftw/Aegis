@@ -10,7 +10,7 @@
  *  6. Subsequent scans of the same APK are served instantly from cache
  */
 
-import { writeCache } from "../cache.js";
+import { writeCache, incrementReportCount } from "../cache.js";
 import { checkVirusTotal } from "../services/virustotal.js";
 import { generateVerdicts } from "../services/groqVerdict.js";
 
@@ -51,6 +51,8 @@ export async function handleApk(formData, db, env) {
   // ── 1. Extract file and hash from FormData ────────────────────────────────
   const file = formData.get("file");
   const sha256 = formData.get("sha256");
+  const pincode = formData.get("pincode") || null;
+  const verifiedUid = formData.get("verifiedUid") || null;
 
   if (!file || !sha256) {
     return Response.json({ error: "Missing file or sha256" }, { status: 400 });
@@ -117,6 +119,17 @@ export async function handleApk(formData, db, env) {
   } catch (err) {
     // Non-fatal — still return result even if cache write fails
     console.error("Cache write failed:", err);
+  }
+
+  // ── 7. Community propagation signal ───────────────────────────────────────
+  if (trustScore < 40 && verifiedUid) {
+    try {
+      const propagation = await incrementReportCount(db, hashToCheck, 'apk', verifiedUid, pincode);
+      result.communityReportCount = propagation.count;
+      result.communityPropagated = propagation.justPropagated;
+    } catch (err) {
+      console.warn('Community signal failed:', err.message);
+    }
   }
 
   return Response.json({ source: "fresh", ...result });
