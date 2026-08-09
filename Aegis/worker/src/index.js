@@ -47,37 +47,40 @@ export default {
 
     let result;
 
-    switch (path) {
-      case '/analyze':
-        result = await handleApk(body, db, env);
-        break;
+    try {
+      switch (path) {
+        case '/analyze':
+          result = await handleApk(body, db, env);
+          break;
 
-      case '/check-link': {
-        const cached = await checkCache(db, 'domain_blocklist', body.url);
-        if (cached) return corsResponse(JSON.stringify(cached));
-        result = await handleLink(body, db, env);
-        break;
+        case '/check-link': {
+          const cached = await checkCache(db, 'domain_blocklist', body.url);
+          if (cached) return corsResponse(JSON.stringify(cached));
+          result = await handleLink(body, db, env);
+          break;
+        }
+
+        case '/breach-lookup': {
+          const cached = await checkCache(db, 'breach_cache', body.hashPrefix);
+          if (cached) return corsResponse(JSON.stringify(cached));
+          result = await handleBreach(body, db, env);
+          break;
+        }
+
+        case '/report-signal':
+          result = { propagated: false, message: 'Signal recorded (Phase 5 pending)' };
+          break;
+
+        case '/subscribe-alerts':
+          result = { ok: true, message: 'Subscription recorded (Phase 6 pending)' };
+          break;
+
+        default:
+          return corsResponse(JSON.stringify({ error: `Unknown route: ${path}` }), 404);
       }
-
-      case '/breach-lookup': {
-        const cached = await checkCache(db, 'breach_cache', body.hashPrefix);
-        if (cached) return corsResponse(JSON.stringify(cached));
-        result = await handleBreach(body, db, env);
-        break;
-      }
-
-      case '/report-signal':
-        // Phase 5 — community signal reporting
-        result = { propagated: false, message: 'Signal recorded (Phase 5 pending)' };
-        break;
-
-      case '/subscribe-alerts':
-        // Phase 6 — FCM token registration
-        result = { ok: true, message: 'Subscription recorded (Phase 6 pending)' };
-        break;
-
-      default:
-        return corsResponse(JSON.stringify({ error: `Unknown route: ${path}` }), 404);
+    } catch (err) {
+      console.error(`Worker error on ${path}:`, err);
+      return corsResponse(JSON.stringify({ error: err.message }), 500);
     }
 
     // If handler returned a Response object, attach CORS headers and return
